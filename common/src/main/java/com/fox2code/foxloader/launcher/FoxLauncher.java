@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 public class FoxLauncher {
     static {
         System.setProperty("file.encoding", "UTF-8");
+        System.setProperty("sun.java2d.uiScale", "1.0");
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         System.setProperty("user.language", "en");
         if (Platform.getJvmVersion() < 17) {

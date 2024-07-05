@@ -65,7 +65,7 @@ public class MixinMinecraft {
     }
 
     @Inject(method = "startMainThread", at = @At("RETURN"))
-    private static void onGameStarted(String var0, String var1, String var2, CallbackInfo ci) {
+    private static void onGameStarted(String username, String sessionID, CallbackInfo ci) {
         try {
             Frame[] frames = Frame.getFrames();
             final List<Image> icons = Collections.singletonList(

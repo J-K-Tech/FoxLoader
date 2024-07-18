@@ -8,6 +8,7 @@ import java.util.*;
 
 public abstract class GameRegistry {
     static final HashMap<String, RegistryEntry> registryEntries = new HashMap<>();
+    static final HashMap<String, EntityTypeRegistryEntry> entityTypeEntries = new HashMap<>();
     static final BlockBuilder DEFAULT_BLOCK_BUILDER = new BlockBuilder();
     static final ItemBuilder DEFAULT_ITEM_BUILDER = new ItemBuilder();
     private static GameRegistry gameRegistry;
@@ -15,6 +16,7 @@ public abstract class GameRegistry {
     public static final int INITIAL_BLOCK_ID = 360;
     public static final int MAXIMUM_BLOCK_ID = 1024; // Hard max: 1258
     public static final int INITIAL_ITEM_ID = 4096;
+    public static final int INITIAL_ENTITY_TYPE_ID = 210;
     public static final int MAXIMUM_ITEM_ID = 8192; // Hard max: 31999
     // Block ids but translated to item ids
     public static final int INITIAL_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(INITIAL_BLOCK_ID);
@@ -23,6 +25,8 @@ public abstract class GameRegistry {
     public static final int DEFAULT_FALLBACK_BLOCK_ID = 1;
     // The default fallback id for items is planks.
     public static final int DEFAULT_FALLBACK_ITEM_ID = 5;
+    // The default fallback id for entity types is pig.
+    public static final int DEFAULT_FALLBACK_ENTITY_TYPE_ID = 90;
 
     public static GameRegistry getInstance() {
         return gameRegistry;
@@ -74,10 +78,17 @@ public abstract class GameRegistry {
     }
 
     /**
-     * @return list of registered modded entries
+     * @return list of registered modded block and item entries
      */
     public static Collection<RegistryEntry> getRegistryEntries() {
         return Collections.unmodifiableCollection(registryEntries.values());
+    }
+
+    /**
+     * @return list of registered modded entities
+     */
+    public static Collection<EntityTypeRegistryEntry> getEntityRegistryEntries() {
+        return Collections.unmodifiableCollection(entityTypeEntries.values());
     }
 
     /**
@@ -123,6 +134,11 @@ public abstract class GameRegistry {
     public abstract int generateNewItemId(String name, int fallbackId);
 
     /**
+     * Only use this if you know what you are doing.
+     */
+    public abstract int generateNewEntityTypeId(String name, int fallbackId);
+
+    /**
      * Register a new block into the game
      */
     public final RegisteredBlock registerNewBlock(String name, BlockBuilder blockBuilder) {
@@ -139,6 +155,15 @@ public abstract class GameRegistry {
     }
 
     public abstract RegisteredItem registerNewItem(String name, ItemBuilder itemBuilder, int fallbackId);
+
+	/**
+	 * Register a new entity type into the game
+	 */
+	public final void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass) {
+		this.registerNewEntityType(name, entityClass, DEFAULT_FALLBACK_ENTITY_TYPE_ID);
+	}
+
+	public abstract void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId);
 
     protected static final String LATE_RECIPE_MESSAGE = "Too late to register recipes!";
     protected static boolean recipeFrozen = false;

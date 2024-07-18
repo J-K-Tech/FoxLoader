@@ -4,6 +4,7 @@
   "package": "com.fox2code.foxloader.client.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AccessorEntityList",
     "MixinBlock",
     "MixinBlockFire",
     "MixinChunk",

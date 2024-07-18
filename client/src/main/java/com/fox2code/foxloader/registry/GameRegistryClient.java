@@ -3,6 +3,7 @@ package com.fox2code.foxloader.registry;
 import static com.fox2code.foxloader.loader.ClientMod.*;
 
 import com.fox2code.foxloader.client.CreativeItems;
+import com.fox2code.foxloader.client.mixins.AccessorEntityList;
 import com.fox2code.foxloader.client.registry.RegisteredBlockImpl;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
@@ -75,6 +76,7 @@ public class GameRegistryClient extends GameRegistry {
 
     private int nextBlockId = INITIAL_BLOCK_ID;
     private int nextItemId = INITIAL_ITEM_ID;
+    private int nextEntityTypeId = INITIAL_ENTITY_TYPE_ID;
 
     private GameRegistryClient() {}
 
@@ -137,6 +139,22 @@ public class GameRegistryClient extends GameRegistry {
         registryEntries.put(name, new RegistryEntry((short) itemId, (short) fallbackId, name,
                 StringTranslate.getInstance().translateKey("item." + name.replace(':', '.'))));
         return itemId;
+    }
+
+    @Override
+    public int generateNewEntityTypeId(String name, int fallbackId) {
+        if (registryEntries.containsKey(name)) {
+            throw new RuntimeException("Duplicate entity string id: " + name);
+        }
+
+        int entityTypeId = nextEntityTypeId++;
+
+        if (entityTypeId > MAXIMUM_ITEM_ID) {
+            throw new RuntimeException("Maximum block count registered! (Too many mods?)");
+        }
+
+        entityTypeEntries.put(name, new EntityTypeRegistryEntry(entityTypeId, fallbackId, name));
+        return entityTypeId;
     }
 
     @Override
@@ -296,6 +314,11 @@ public class GameRegistryClient extends GameRegistry {
         }
         return (RegisteredItem) item;
     }
+
+	@Override
+	public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId) {
+		AccessorEntityList.invokeAddMapping(entityClass, name, generateNewEntityTypeId(name, fallbackId));
+	}
 
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {

@@ -4,6 +4,7 @@ import static com.fox2code.foxloader.loader.ServerMod.*;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
+import com.fox2code.foxloader.server.mixins.AccessorEntityList;
 import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import com.fox2code.foxloader.server.registry.RegisteredBlockImpl;
 import net.minecraft.src.game.block.*;
@@ -62,6 +63,7 @@ public class GameRegistryServer extends GameRegistry {
 
     private int nextBlockId = INITIAL_BLOCK_ID;
     private int nextItemId = INITIAL_ITEM_ID;
+    private int nextEntityTypeId = INITIAL_ENTITY_TYPE_ID;
 
     private GameRegistryServer() {}
 
@@ -124,6 +126,18 @@ public class GameRegistryServer extends GameRegistry {
         registryEntries.put(name, new RegistryEntry((short) itemId, (short) fallbackId, name,
                 StringTranslate.getInstance().translateKey("item." + name.replace(':', '.'))));
         return itemId;
+    }
+
+    @Override
+    public int generateNewEntityTypeId(String name, int fallbackId) {
+        if (registryEntries.containsKey(name)) {
+            throw new RuntimeException("Duplicate entity string id: " + name);
+        }
+
+        int entityTypeId = nextEntityTypeId++;
+
+        entityTypeEntries.put(name, new EntityTypeRegistryEntry(entityTypeId, fallbackId, name));
+        return entityTypeId;
     }
 
     @Override
@@ -275,6 +289,11 @@ public class GameRegistryServer extends GameRegistry {
         }
         return (RegisteredItem) item;
     }
+
+	@Override
+	public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId) {
+		AccessorEntityList.invokeAddMapping(entityClass, name, generateNewEntityTypeId(name, fallbackId));
+	}
 
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {

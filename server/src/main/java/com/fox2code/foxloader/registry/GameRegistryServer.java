@@ -42,21 +42,24 @@ public class GameRegistryServer extends GameRegistry {
 
     public static void freeze() {
         if (!ModLoader.areAllModsLoaded())
-            throw new IllegalArgumentException("Mods didn't finished to load!");
+            throw new IllegalArgumentException("Mods haven't finished loading!");
         // Compile server hello into a byte array for memory and performance efficiency.
         serverHello = ModLoader.Internal.compileServerHello(
-                new ServerHello(GameRegistry.registryEntries,
-                        new HashMap<>(SidedMetadataAPI.getSelfMetadata())));
-        final Block stoneBlock = Block.blocksList[0];
+                new ServerHello(
+                        GameRegistry.registryEntries,
+                        new HashMap<>(SidedMetadataAPI.getSelfMetadata()),
+                        GameRegistry.entityTypeEntries
+                ));
+        final Block airBlock = Block.blocksList[0]; // was named "stoneBlock" but that is incorrect
         for (int i = 0; i < Block.blocksList.length; i++) {
             if (Block.blocksList[i] == null) {
-                Block.blocksList[i] = stoneBlock;
+                Block.blocksList[i] = airBlock;
             }
         }
-        final Item stoneItem = Item.itemsList[0];
+        final Item airItem = Item.itemsList[0]; // was named "stoneItem" but that is incorrect
         for (int i = 0; i < Item.itemsList.length; i++) {
             if (Item.itemsList[i] == null) {
-                Item.itemsList[i] = stoneItem;
+                Item.itemsList[i] = airItem;
             }
         }
     }

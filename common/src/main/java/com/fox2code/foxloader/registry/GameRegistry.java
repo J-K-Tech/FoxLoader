@@ -16,8 +16,10 @@ public abstract class GameRegistry {
     public static final int INITIAL_BLOCK_ID = 360;
     public static final int MAXIMUM_BLOCK_ID = 1024; // Hard max: 1258
     public static final int INITIAL_ITEM_ID = 4096;
-    public static final int INITIAL_ENTITY_TYPE_ID = 210;
     public static final int MAXIMUM_ITEM_ID = 8192; // Hard max: 31999
+    public static final int INITIAL_ENTITY_TYPE_ID = 210;
+    // Array size limit is fuzzy so lets avoid it.
+    public static final int MAXIMUM_ENTITY_TYPE_ID = Integer.MAX_VALUE - Short.MAX_VALUE;
     // Block ids but translated to item ids
     public static final int INITIAL_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(INITIAL_BLOCK_ID);
     public static final int MAXIMUM_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(MAXIMUM_BLOCK_ID);
@@ -240,21 +242,27 @@ public abstract class GameRegistry {
 
     /**
      * @param itemId the item id
-     * @return if the id is reserved for mod loader use
+     * @return if the id is an item id reserved for mod loader use
      */
     public static boolean isLoaderReservedItemId(int itemId) {
-        return (itemId >= INITIAL_TRANSLATED_BLOCK_ID &&
-                itemId < MAXIMUM_TRANSLATED_BLOCK_ID) ||
-                (itemId >= INITIAL_ITEM_ID && itemId < MAXIMUM_ITEM_ID);
+        return (itemId >= INITIAL_TRANSLATED_BLOCK_ID && itemId < MAXIMUM_TRANSLATED_BLOCK_ID)
+                || (itemId >= INITIAL_ITEM_ID && itemId < MAXIMUM_ITEM_ID);
     }
 
     /**
      * @param itemId the item id
-     * @return if the id is reserved for mod loader and a block
+     * @return if the id is a block id reserved for mod loader use
      */
     public static boolean isLoaderReservedBlockItemId(int itemId) {
-        return (itemId >= INITIAL_TRANSLATED_BLOCK_ID &&
-                itemId < MAXIMUM_TRANSLATED_BLOCK_ID);
+        return itemId >= INITIAL_TRANSLATED_BLOCK_ID && itemId < MAXIMUM_TRANSLATED_BLOCK_ID;
+    }
+
+    /**
+     * @param entityTypeId the entity type id
+     * @return if the id is an entity id reserved for mod loader use
+     */
+    public static boolean isLoaderReservedEntityTypeId(int entityTypeId) {
+        return entityTypeId >= INITIAL_ENTITY_TYPE_ID && entityTypeId < MAXIMUM_ENTITY_TYPE_ID;
     }
 
     public interface Ingredient {}

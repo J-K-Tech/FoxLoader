@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.loader.packet;
 
+import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.registry.EntityTypeRegistryEntry;
 import com.fox2code.foxloader.registry.RegistryEntry;
 
@@ -8,10 +9,20 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public final class ServerHello extends FoxPacket {
-    public static final int SERVER_HELLO_VERSION = 1;
-    private static final int SERVER_HELLO_VERSION_NEXT = 1;
+    /**
+	 * <p>The current version of the Server Hello packet.</p>
+     * <b>V0</b> - <i>Block and Item registry entries and metadata</i>.<br/>
+     * <b>V1</b> - <i>Entity type registry metadata appended to the end</i>.
+     */
+    public static final short SERVER_HELLO_VERSION = 1;
+    /**
+     * <p>The minimum version of ServerHello on older clients for the server to be compatible with.</p>
+     * V0 clients will always expect exactly {@literal 0}.
+     */
+    private static final short CLIENT_BACKWARD_COMPATIBILITY_VERSION = 0;
 
     public HashMap<String, RegistryEntry> registryEntries;
     public HashMap<String, String> metadata;
@@ -30,13 +41,15 @@ public final class ServerHello extends FoxPacket {
         this.entityTypeRegistryEntries = entityTypeRegistryEntries;
     }
 
+	/**
+	 * @throws IOException if the data cannot be read as instructed.
+	 */
     @Override
     public void readData(DataInputStream inStream) throws IOException {
         int serverHelloVersion = inStream.readUnsignedShort();
-        if (serverHelloVersion >= SERVER_HELLO_VERSION_NEXT &&
-                // Next field is how much backward compatible is the packet
-                inStream.readUnsignedShort() > SERVER_HELLO_VERSION_NEXT) {
-            throw new RuntimeException("Client is critically out of date, please update FoxLoader");
+        int clientBackwardCompatibilityVersion = inStream.readUnsignedShort();
+        if (SERVER_HELLO_VERSION < clientBackwardCompatibilityVersion) {
+            throw new IOException("Client is critically out of date, please update FoxLoader.");
         }
 
         int entries = inStream.readUnsignedShort();
@@ -51,6 +64,7 @@ public final class ServerHello extends FoxPacket {
         if (inStream.available() < 2) {
             // Too few bytes to read the next short.
             this.metadata = new HashMap<>();
+            ModLoader.getModLoaderLogger().log(Level.WARNING, "Server Hello: Too few bytes to read metadata.");
         } else {
             entries = inStream.readUnsignedShort();
             metadata = new HashMap<>();
@@ -60,8 +74,8 @@ public final class ServerHello extends FoxPacket {
         }
 
         if (inStream.available() < 4) {
-            // Too few bytes to read the next integer.
             this.entityTypeRegistryEntries = new HashMap<>();
+            ModLoader.getModLoaderLogger().log(Level.WARNING, "Server Hello: Too few bytes to read entity data.");
         } else {
             int entityEntries = inStream.readInt();
             entityTypeRegistryEntries = new HashMap<>(entityEntries);
@@ -76,6 +90,7 @@ public final class ServerHello extends FoxPacket {
     @Override
     public void writeData(DataOutputStream outStream) throws IOException {
         outStream.writeShort(SERVER_HELLO_VERSION);
+        outStream.writeShort(CLIENT_BACKWARD_COMPATIBILITY_VERSION);
 
         outStream.writeShort(this.registryEntries.size());
         for (RegistryEntry registryEntry : registryEntries.values()) {

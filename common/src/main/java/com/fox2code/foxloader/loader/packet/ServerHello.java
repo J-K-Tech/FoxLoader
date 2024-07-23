@@ -47,7 +47,7 @@ public final class ServerHello extends FoxPacket {
     @Override
     public void readData(DataInputStream inStream) throws IOException {
         int serverHelloVersion = inStream.readUnsignedShort();
-        int clientBackwardCompatibilityVersion = inStream.readUnsignedShort();
+        int clientBackwardCompatibilityVersion = serverHelloVersion == 0 ? 0 : inStream.readUnsignedShort();
         if (SERVER_HELLO_VERSION < clientBackwardCompatibilityVersion) {
             throw new IOException("Client is critically out of date, please update FoxLoader.");
         }
@@ -77,11 +77,11 @@ public final class ServerHello extends FoxPacket {
             this.entityTypeRegistryEntries = new HashMap<>();
             ModLoader.getModLoaderLogger().log(Level.WARNING, "Server Hello: Too few bytes to read entity data.");
         } else {
-            int entityEntries = inStream.readInt();
+            int entityEntries = inStream.readUnsignedShort();
             entityTypeRegistryEntries = new HashMap<>(entityEntries);
             while (entityEntries-- > 0) {
                 EntityTypeRegistryEntry entry = new EntityTypeRegistryEntry(
-                        inStream.readInt(), inStream.readInt(), inStream.readUTF());
+                        inStream.readUnsignedShort(), inStream.readUnsignedShort(), inStream.readUTF());
                 this.entityTypeRegistryEntries.put(entry.name, entry);
             }
         }
@@ -106,10 +106,10 @@ public final class ServerHello extends FoxPacket {
             outStream.writeUTF(metadata.getValue());
         }
 
-        outStream.writeInt(this.entityTypeRegistryEntries.size());
+        outStream.writeShort(this.entityTypeRegistryEntries.size());
         for (EntityTypeRegistryEntry entry : entityTypeRegistryEntries.values()) {
-            outStream.writeInt(entry.realId);
-            outStream.writeInt(entry.fallbackId);
+            outStream.writeShort(entry.realId);
+            outStream.writeShort(entry.fallbackId);
             outStream.writeUTF(entry.name);
         }
     }

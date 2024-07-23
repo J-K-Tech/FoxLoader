@@ -53,6 +53,10 @@ public class GameRegistryClient extends GameRegistry {
             blockIdMappingIn[i] = i;
             blockIdMappingOut[i] = i;
         }
+        for (short i = 0; i < MAXIMUM_ENTITY_TYPE_ID; i++) {
+            entityTypeIdMappingIn[i] = i;
+            entityTypeIdMappingOut[i] = i;
+        }
     }
 
     public static void initialize() {
@@ -406,6 +410,10 @@ public class GameRegistryClient extends GameRegistry {
                 blockIdMappingIn[i] = i;
                 blockIdMappingOut[i] = i;
             }
+            for (short i = INITIAL_ENTITY_TYPE_ID; i < MAXIMUM_ENTITY_TYPE_ID; i++) {
+                entityTypeIdMappingIn[i] = i;
+                entityTypeIdMappingOut[i] = i;
+            }
         } else {
             if (idMappingState == MappingState.SERVER) return;
             idMappingState = MappingState.SERVER;
@@ -421,8 +429,13 @@ public class GameRegistryClient extends GameRegistry {
                 itemIdMappingIn[i] = DEFAULT_FALLBACK_ITEM_ID;
                 itemIdMappingOut[i] = DEFAULT_FALLBACK_ITEM_ID;
             }
+            for (short i = INITIAL_ENTITY_TYPE_ID; i < MAXIMUM_ENTITY_TYPE_ID; i++) {
+                entityTypeIdMappingIn[i] = DEFAULT_FALLBACK_ENTITY_TYPE_ID;
+                entityTypeIdMappingOut[i] = DEFAULT_FALLBACK_ENTITY_TYPE_ID;
+            }
         }
         Arrays.fill(itemIdMappingInNames, null);
+        Arrays.fill(entityTypeIdMappingNames, null);
     }
 
     public static void initializeMappings(ServerHello serverHello) {

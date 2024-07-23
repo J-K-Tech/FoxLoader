@@ -19,7 +19,7 @@ public abstract class GameRegistry {
     public static final int MAXIMUM_ITEM_ID = 8192; // Hard max: 31999
     public static final int INITIAL_ENTITY_TYPE_ID = 210;
     // Array size limit is fuzzy so lets avoid it.
-    public static final int MAXIMUM_ENTITY_TYPE_ID = Integer.MAX_VALUE - Short.MAX_VALUE;
+    public static final int MAXIMUM_ENTITY_TYPE_ID = 255; // Integer.MAX_VALUE - Short.MAX_VALUE;
     // Block ids but translated to item ids
     public static final int INITIAL_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(INITIAL_BLOCK_ID);
     public static final int MAXIMUM_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(MAXIMUM_BLOCK_ID);

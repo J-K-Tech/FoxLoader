@@ -8,6 +8,9 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.GameRegistryClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.packets.*;
+import net.minecraft.src.game.entity.Entity;
+import net.minecraft.src.game.entity.EntityList;
+import net.minecraft.src.game.level.World;
 import net.minecraft.src.game.level.WorldClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -48,9 +51,17 @@ public abstract class MixinNetClientHandler implements NetworkConnection {
 
     @Inject(method = "handleVehicleSpawn", at = @At("HEAD"))
     public void onHandleVehicleSpawn(Packet23VehicleSpawn packet23, CallbackInfo ci) {
+        packet23.type = GameRegistryClient.entityTypeIdMappingIn[packet23.type];
         if (packet23.type == 70) {
             packet23.payload0 = GameRegistryClient.itemIdMappingIn[packet23.payload0];
         }
+    }
+
+    @Redirect(method = "handleMobSpawn", at = @At(value = "INVOKE", target =
+            "Lnet/minecraft/src/game/entity/EntityList;createEntity(ILnet/minecraft/src/game/level/World;)Lnet/minecraft/src/game/entity/Entity;"))
+    public Entity onHandleMobSpawn(int i, World world) {
+        if (i < 0) i += 256;
+        return EntityList.createEntity(GameRegistryClient.entityTypeIdMappingIn[i], world);
     }
 
     @Inject(method = "handleMultiBlockChange", at = @At("HEAD"))

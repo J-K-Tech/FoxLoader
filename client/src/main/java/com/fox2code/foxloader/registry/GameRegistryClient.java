@@ -3,6 +3,7 @@ package com.fox2code.foxloader.registry;
 import static com.fox2code.foxloader.loader.ClientMod.*;
 
 import com.fox2code.foxloader.client.CreativeItems;
+import com.fox2code.foxloader.client.mixins.AccessorEntityList;
 import com.fox2code.foxloader.client.registry.RegisteredBlockImpl;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
@@ -33,6 +34,11 @@ public class GameRegistryClient extends GameRegistry {
     public static final short[] blockIdMappingIn = new short[MAXIMUM_BLOCK_ID];
     public static final short[] blockIdMappingOut = new short[MAXIMUM_BLOCK_ID];
     public static final String[] itemIdMappingInNames = new String[MAXIMUM_ITEM_ID];
+
+    public static final int[] entityTypeIdMappingIn = new int[MAXIMUM_ENTITY_TYPE_ID];
+    public static final int[] entityTypeIdMappingOut = new int[MAXIMUM_ENTITY_TYPE_ID];
+    public static final String[] entityTypeIdMappingNames = new String[MAXIMUM_ENTITY_TYPE_ID];
+
     private static MappingState idMappingState = MappingState.CLIENT;
     private enum MappingState {
         CLIENT, SERVER, CUSTOM
@@ -75,6 +81,7 @@ public class GameRegistryClient extends GameRegistry {
 
     private int nextBlockId = INITIAL_BLOCK_ID;
     private int nextItemId = INITIAL_ITEM_ID;
+    private int nextEntityTypeId = INITIAL_ENTITY_TYPE_ID;
 
     private GameRegistryClient() {}
 
@@ -127,16 +134,41 @@ public class GameRegistryClient extends GameRegistry {
         if (registryEntries.containsKey(name)) {
             throw new RuntimeException("Duplicate item/block string id: " + name);
         }
+
         if (fallbackId < 0 || fallbackId > 255) {
             throw new IllegalArgumentException("Invalid fallback id: " + fallbackId);
         }
+
         int itemId = nextItemId++;
+
         if (itemId > MAXIMUM_ITEM_ID) {
             throw new RuntimeException("Maximum block count registered! (Too many mods?)");
         }
+
         registryEntries.put(name, new RegistryEntry((short) itemId, (short) fallbackId, name,
                 StringTranslate.getInstance().translateKey("item." + name.replace(':', '.'))));
         return itemId;
+    }
+
+    @Override
+    public int generateNewEntityTypeId(String name, int fallbackId) {
+        if (registryEntries.containsKey(name)) {
+            throw new RuntimeException("Duplicate entity string id: " + name);
+        }
+
+        if (fallbackId < 0 || fallbackId > 202) {
+            throw new IllegalArgumentException("Invalid fallback id: " + fallbackId);
+        }
+
+        int entityTypeId = nextEntityTypeId++;
+
+        if (entityTypeId > MAXIMUM_ENTITY_TYPE_ID) {
+            // This is extremely unlikely
+            throw new RuntimeException("Maximum entity type count registered! (Too many mods?)");
+        }
+
+        entityTypeEntries.put(name, new EntityTypeRegistryEntry(entityTypeId, fallbackId, name));
+        return entityTypeId;
     }
 
     @Override
@@ -297,6 +329,11 @@ public class GameRegistryClient extends GameRegistry {
         return (RegisteredItem) item;
     }
 
+	@Override
+	public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId) {
+		AccessorEntityList.invokeAddMapping(entityClass, name, generateNewEntityTypeId(name, fallbackId));
+	}
+
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {
         if (recipeFrozen) throw new UnsupportedOperationException(LATE_RECIPE_MESSAGE);
@@ -376,11 +413,11 @@ public class GameRegistryClient extends GameRegistry {
                 itemIdMappingIn[i] = DEFAULT_FALLBACK_BLOCK_ID;
                 itemIdMappingOut[i] = DEFAULT_FALLBACK_BLOCK_ID;
             }
-            for (int i = INITIAL_BLOCK_ID; i < MAXIMUM_BLOCK_ID; i++) {
+            for (short i = INITIAL_BLOCK_ID; i < MAXIMUM_BLOCK_ID; i++) {
                 blockIdMappingIn[i] = DEFAULT_FALLBACK_BLOCK_ID;
                 blockIdMappingOut[i] = DEFAULT_FALLBACK_BLOCK_ID;
             }
-            for (int i = INITIAL_ITEM_ID; i < MAXIMUM_ITEM_ID; i++) {
+            for (short i = INITIAL_ITEM_ID; i < MAXIMUM_ITEM_ID; i++) {
                 itemIdMappingIn[i] = DEFAULT_FALLBACK_ITEM_ID;
                 itemIdMappingOut[i] = DEFAULT_FALLBACK_ITEM_ID;
             }
@@ -400,35 +437,46 @@ public class GameRegistryClient extends GameRegistry {
             return;
         }
         idMappingState = MappingState.CUSTOM;
-        for (RegistryEntry registryEntry : serverHello.registryEntries.values()) {
-            final short remoteId = registryEntry.realId;
+        for (RegistryEntry entry : serverHello.registryEntries.values()) {
+            final short remoteId = entry.realId;
             if (isLoaderReservedItemId(remoteId)) {
-                RegistryEntry local = registryEntries.get(
-                        itemIdMappingInNames[remoteId] = registryEntry.name);
+                RegistryEntry local = registryEntries.get(itemIdMappingInNames[remoteId] = entry.name);
                 if (local == null) {
-                    itemIdMappingIn[remoteId] = registryEntry.fallbackId;
+                    itemIdMappingIn[remoteId] = entry.fallbackId;
                     if (remoteId >= INITIAL_TRANSLATED_BLOCK_ID &&
                             remoteId < MAXIMUM_TRANSLATED_BLOCK_ID) {
-                        blockIdMappingIn[convertItemIdToBlockId(remoteId)] = registryEntry.fallbackId;
+                        blockIdMappingIn[convertItemIdToBlockId(remoteId)] = entry.fallbackId;
                     }
                 } else {
                     itemIdMappingIn[remoteId] = local.realId;
                     itemIdMappingOut[local.realId] = remoteId;
-                    if (remoteId >= INITIAL_TRANSLATED_BLOCK_ID &&
-                            remoteId < MAXIMUM_TRANSLATED_BLOCK_ID) {
-                        if (local.realId >= INITIAL_TRANSLATED_BLOCK_ID &&
-                                local.realId < MAXIMUM_TRANSLATED_BLOCK_ID) {
+                    if (remoteId >= INITIAL_TRANSLATED_BLOCK_ID && remoteId < MAXIMUM_TRANSLATED_BLOCK_ID) {
+                        if (local.realId >= INITIAL_TRANSLATED_BLOCK_ID && local.realId < MAXIMUM_TRANSLATED_BLOCK_ID) {
                             final short remoteBlockId = (short) convertItemIdToBlockId(remoteId);
                             final short localBlockId = (short) convertItemIdToBlockId(local.realId);
                             blockIdMappingIn[remoteBlockId] = localBlockId;
                             blockIdMappingOut[localBlockId] = remoteBlockId;
                         } else {
                             // We should never reach here, but let still "support" this extreme case.
-                            blockIdMappingIn[convertItemIdToBlockId(remoteId)] = registryEntry.fallbackId;
+                            blockIdMappingIn[convertItemIdToBlockId(remoteId)] = entry.fallbackId;
                         }
                     }
                 }
             }
+        }
+
+        for (EntityTypeRegistryEntry entry : serverHello.entityTypeRegistryEntries.values()) {
+            final int remoteId = entry.realId;
+            if (isLoaderReservedEntityTypeId(remoteId)) {
+                EntityTypeRegistryEntry local = entityTypeEntries.get(entityTypeIdMappingNames[remoteId] = entry.name);
+                if (local == null) {
+                    entityTypeIdMappingIn[remoteId] = entry.fallbackId;
+                    continue;
+                }
+
+				entityTypeIdMappingIn[remoteId] = local.realId;
+                entityTypeIdMappingOut[local.realId] = remoteId;
+			}
         }
     }
 }

@@ -4,6 +4,7 @@ import static com.fox2code.foxloader.loader.ServerMod.*;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
+import com.fox2code.foxloader.server.mixins.AccessorEntityList;
 import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import com.fox2code.foxloader.server.registry.RegisteredBlockImpl;
 import net.minecraft.src.game.block.*;
@@ -41,27 +42,31 @@ public class GameRegistryServer extends GameRegistry {
 
     public static void freeze() {
         if (!ModLoader.areAllModsLoaded())
-            throw new IllegalArgumentException("Mods didn't finished to load!");
+            throw new IllegalArgumentException("Mods haven't finished loading!");
         // Compile server hello into a byte array for memory and performance efficiency.
         serverHello = ModLoader.Internal.compileServerHello(
-                new ServerHello(GameRegistry.registryEntries,
-                        new HashMap<>(SidedMetadataAPI.getSelfMetadata())));
-        final Block stoneBlock = Block.blocksList[0];
+                new ServerHello(
+                        GameRegistry.registryEntries,
+                        new HashMap<>(SidedMetadataAPI.getSelfMetadata()),
+                        GameRegistry.entityTypeEntries
+                ));
+        final Block airBlock = Block.blocksList[0]; // was named "stoneBlock" but that is incorrect
         for (int i = 0; i < Block.blocksList.length; i++) {
             if (Block.blocksList[i] == null) {
-                Block.blocksList[i] = stoneBlock;
+                Block.blocksList[i] = airBlock;
             }
         }
-        final Item stoneItem = Item.itemsList[0];
+        final Item airItem = Item.itemsList[0]; // was named "stoneItem" but that is incorrect
         for (int i = 0; i < Item.itemsList.length; i++) {
             if (Item.itemsList[i] == null) {
-                Item.itemsList[i] = stoneItem;
+                Item.itemsList[i] = airItem;
             }
         }
     }
 
     private int nextBlockId = INITIAL_BLOCK_ID;
     private int nextItemId = INITIAL_ITEM_ID;
+    private int nextEntityTypeId = INITIAL_ENTITY_TYPE_ID;
 
     private GameRegistryServer() {}
 
@@ -124,6 +129,18 @@ public class GameRegistryServer extends GameRegistry {
         registryEntries.put(name, new RegistryEntry((short) itemId, (short) fallbackId, name,
                 StringTranslate.getInstance().translateKey("item." + name.replace(':', '.'))));
         return itemId;
+    }
+
+    @Override
+    public int generateNewEntityTypeId(String name, int fallbackId) {
+        if (registryEntries.containsKey(name)) {
+            throw new RuntimeException("Duplicate entity string id: " + name);
+        }
+
+        int entityTypeId = nextEntityTypeId++;
+
+        entityTypeEntries.put(name, new EntityTypeRegistryEntry(entityTypeId, fallbackId, name));
+        return entityTypeId;
     }
 
     @Override
@@ -275,6 +292,11 @@ public class GameRegistryServer extends GameRegistry {
         }
         return (RegisteredItem) item;
     }
+
+	@Override
+	public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId) {
+		AccessorEntityList.invokeAddMapping(entityClass, name, generateNewEntityTypeId(name, fallbackId));
+	}
 
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {

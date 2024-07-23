@@ -256,6 +256,13 @@ public abstract class Mod implements LifecycleListener {
     }
 
     /**
+     * @see GameRegistry#registerNewEntityType(String, Class, int)
+     */
+    public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass) {
+        GameRegistry.getInstance().registerNewEntityType(name, entityClass);
+    }
+
+    /**
      * @see GameRegistry#registerRecipe(RegisteredItemStack, Object...)
      */
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {

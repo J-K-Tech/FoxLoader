@@ -5,6 +5,7 @@
   "plugin": "com.fox2code.foxloader.loader.mixin.MixinTestModePlugin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AccessorEntityList",
     "MixinBlock",
     "MixinBlockFire",
     "MixinChunkBlockMap",

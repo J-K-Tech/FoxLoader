@@ -55,7 +55,7 @@ gradlePlugin {
     }
     plugins {
         create('simplePlugin') {
-            id = 'com.fox2code.foxloader.dev'
+            id = 'foxloader.dev'
             implementationClass = 'com.fox2code.foxloader.dev.GradlePlugin'
         }
     }

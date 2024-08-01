@@ -61,7 +61,7 @@ public final class ServerHello extends FoxPacket {
             this.registryEntries.put(entry.name, entry);
         }
 
-        if (inStream.available() < 2) {
+        if (inStream.available() == 0) {
             // Too few bytes to read the next short.
             this.metadata = new HashMap<>();
             ModLoader.getModLoaderLogger().log(Level.WARNING, "Server Hello: Too few bytes to read metadata.");
@@ -73,13 +73,13 @@ public final class ServerHello extends FoxPacket {
             }
         }
 
-        if (inStream.available() < 4) {
+        if (inStream.available() == 0) {
             this.entityTypeRegistryEntries = new HashMap<>();
             ModLoader.getModLoaderLogger().log(Level.WARNING, "Server Hello: Too few bytes to read entity data.");
         } else {
             int entityEntries = inStream.readUnsignedShort();
             entityTypeRegistryEntries = new HashMap<>(entityEntries);
-            while (entityEntries-- > 0) {
+            while (entityEntries--> 0) {
                 EntityTypeRegistryEntry entry = new EntityTypeRegistryEntry(
                         inStream.readUnsignedShort(), inStream.readUnsignedShort(), inStream.readUTF());
                 this.entityTypeRegistryEntries.put(entry.name, entry);

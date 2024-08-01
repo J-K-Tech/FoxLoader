@@ -43,7 +43,7 @@ public class DependencyHelper {
             new Dependency("net.fabricmc:sponge-mixin:0.15.0+mixin.0.8.7", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
             new Dependency("io.github.llamalad7:mixinextras-common:0.4.0",
                     MAVEN_CENTRAL, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
-            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.2.0-beta.6",
+            new Dependency("com.bawnorton.mixinsquared:mixinsquared-common:0.2.0-beta.6",
                     FOX2CODE, "com.bawnorton.mixinsquared.MixinSquaredBootstrap"),
             jFallback, // jFallback have special handling in dev plugin
     };

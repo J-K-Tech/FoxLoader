@@ -14,7 +14,7 @@ import java.util.logging.Level;
 public final class ServerHello extends FoxPacket {
     /**
 	 * <p>The current version of the Server Hello packet.</p>
-     * <b>V0</b> - <i>Block and Item registry entries and metadata</i>.<br/>
+     * <b>V0</b> - <i>Block and Item registry entries and metadata</i>.<br>
      * <b>V1</b> - <i>Entity type registry metadata appended to the end</i>.
      */
     public static final short SERVER_HELLO_VERSION = 1;

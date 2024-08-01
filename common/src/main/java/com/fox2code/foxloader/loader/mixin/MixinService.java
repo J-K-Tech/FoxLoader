@@ -111,18 +111,23 @@ public class MixinService extends MixinServiceAbstract implements IMixinService,
 
     @Override
     public ClassNode getClassNode(String name) throws ClassNotFoundException, IOException {
-        return this.getClassNode(name, false);
+        return this.getClassNode(name, false, 0);
     }
 
     @Override
     public ClassNode getClassNode(String name, boolean runTransformers) throws ClassNotFoundException, IOException {
+        return this.getClassNode(name, runTransformers, 0);
+    }
+
+    @Override
+    public ClassNode getClassNode(String name, boolean runTransformers, int readerFlags) throws ClassNotFoundException, IOException {
         ClassNode classNode = new ClassNode();
         InputStream is = FoxLauncher.getFoxClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
         if (is == null) {
             System.err.println("Failed to find class \"" + name + "\" for mixin");
             throw new ClassNotFoundException(name);
         }
-        new ClassReader(is).accept(classNode, 0);
+        new ClassReader(is).accept(classNode, readerFlags);
         // Always apply PreLoader
         PreLoader.patchForMixin(classNode, name);
         return classNode;

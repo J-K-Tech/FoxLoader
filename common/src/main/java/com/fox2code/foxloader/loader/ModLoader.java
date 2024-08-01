@@ -113,6 +113,13 @@ public class ModLoader extends Mod {
                 coreMods.add(coremod);
             }
             PreLoader.loadPrePatches(client, true);
+            Iterator<File> fileIterator = FoxLauncher.fileToLoadIterator();
+            while (fileIterator.hasNext()) {
+                File file = fileIterator.next();
+                if (file.getName().endsWith(".jar")) {
+                    loadModContainerFromJar(file, false);
+                }
+            }
             for (File mod : Objects.requireNonNull(mods.listFiles(
                     (dir, name) -> name.endsWith(".jar")))) {
                 loadModContainerFromJar(mod, false);

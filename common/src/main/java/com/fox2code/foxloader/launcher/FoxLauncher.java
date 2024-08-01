@@ -6,10 +6,11 @@ import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class FoxLauncher {
     static {
@@ -44,6 +45,7 @@ public class FoxLauncher {
     public static final HashMap<String, Object> mixinProperties = new HashMap<>();
     static LauncherType launcherType = LauncherType.UNKNOWN;
     private static boolean client, wronglyInstalled, wronglyInstalledUnrecoverable;
+    private static final LinkedList<File> filesToLoad = new LinkedList<>();
     static FoxClassLoader foxClassLoader;
     static File gameDir;
     public static String initialUsername;
@@ -111,6 +113,7 @@ public class FoxLauncher {
         foxClassLoader.addTransformerExclusion("com.fox2code.jfallback.");
         foxClassLoader.addTransformerExclusion("com.fox2code.foxloader.loader.");
         installLoggerHelper(true); // Install special logger before libraries loading
+        initializeClassPath(); // Initialize class path before libraries loading
         DependencyHelper.loadDependencies(true);
     }
 
@@ -159,7 +162,27 @@ public class FoxLauncher {
         foxClassLoader.addTransformerExclusion("com.fox2code.jfallback.");
         foxClassLoader.addTransformerExclusion("com.fox2code.foxloader.loader.");
         installLoggerHelper(false); // Install special logger before libraries loading
+        initializeClassPath(); // Initialize class path before libraries loading
         DependencyHelper.loadDependencies(false);
+    }
+
+    private static void initializeClassPath() {
+        String javaHome = System.getProperty("java.home");
+        String classPath = System.getProperty("java.class.path");
+        Pattern pattern = Pattern.compile(File.pathSeparator, Pattern.LITERAL);
+        for (String path : pattern.split(classPath)) {
+            if (path.startsWith(javaHome)) continue;
+            File file = new File(path).getAbsoluteFile();
+            if (file.isDirectory()) {
+                try {
+                    foxClassLoader.addURL(file.toURI().toURL());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace(hasLogger ? System.err : System.out);
+                }
+            } else {
+                filesToLoad.add(file);
+            }
+        }
     }
 
     private static void installLoggerHelper(boolean client) {
@@ -174,6 +197,10 @@ public class FoxLauncher {
             System.out.println("Failed to install log helper!");
         }
         hasLogger = installed;
+    }
+
+    public static Iterator<File> fileToLoadIterator() {
+        return filesToLoad.iterator();
     }
 
     public static void installLoggerHelperOn(Logger logger) {

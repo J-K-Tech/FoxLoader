@@ -173,6 +173,7 @@ public class FoxLauncher {
         for (String path : pattern.split(classPath)) {
             if (path.startsWith(javaHome)) continue;
             File file = new File(path).getAbsoluteFile();
+            if (foxLoaderFile.getPath().equals(file.getPath())) continue;
             if (file.isDirectory()) {
                 try {
                     foxClassLoader.addURL(file.toURI().toURL());

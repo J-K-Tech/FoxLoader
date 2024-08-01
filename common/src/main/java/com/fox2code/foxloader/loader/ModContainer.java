@@ -262,8 +262,13 @@ public final class ModContainer {
     private Mod initializeMod(String clsName) throws ReflectiveOperationException {
         if (clsName == null) return null;
         Mod mod;
-        Class<? extends Mod> cls = Class.forName(clsName, false,
-                FoxLauncher.getFoxClassLoader()).asSubclass(Mod.class);
+        Class<?> cls0 = Class.forName(clsName, false, FoxLauncher.getFoxClassLoader());
+        if (cls0.getClassLoader() == FoxLauncher.class.getClassLoader()) {
+            // This would have previously made a vague "ClassCastException" in "cls0.asSubclass(Mod.class)"
+            throw new ReflectiveOperationException("Class \"" + clsName +
+                    "\" exist on system class loader, and therefore cannot be properly loaded.");
+        }
+        Class<? extends Mod> cls = cls0.asSubclass(Mod.class);
         try {
             tmp = this;
             mod = cls.newInstance();

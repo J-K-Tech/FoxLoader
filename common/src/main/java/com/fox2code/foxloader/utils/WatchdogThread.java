@@ -73,6 +73,7 @@ final class WatchdogThread extends Thread {
             System.out.println();
         }
         if (andExit) {
+            System.out.flush();
             System.exit(1);
         }
     }

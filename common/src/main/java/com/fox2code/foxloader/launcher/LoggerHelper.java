@@ -138,6 +138,12 @@ final class LoggerHelper {
                 rootLogger.log(level, line);
             }
         }
+
+        @Override
+        public void flush() {
+            super.flush();
+            directFileHandler.flush();
+        }
     }
 
     private static class FoxLoaderLogFormatter extends SimpleFormatter {

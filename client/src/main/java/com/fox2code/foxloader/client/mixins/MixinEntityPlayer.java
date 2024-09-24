@@ -32,7 +32,7 @@ public class MixinEntityPlayer implements LuaObjectHolder {
         if (!(this instanceof NetworkPlayer)) return;
         NetworkPlayer networkPlayer = (NetworkPlayer) this;
         if (ModLoader.Internal.notifyPlayerAttackEntity(networkPlayer,
-                networkPlayer.getRegisteredHeldItem(), (RegisteredEntity) var1)) {
+                networkPlayer.getRegisteredHeldItem(), (RegisteredEntity) var1, false)) {
             ci.cancel();
         }
     }

@@ -602,8 +602,8 @@ public class ModLoader extends Mod {
         }
 
         public static boolean notifyPlayerAttackEntity(
-                NetworkPlayer networkPlayer, RegisteredItemStack itemStack, RegisteredEntity targetEntity) {
-            boolean cancelled = false;
+                NetworkPlayer networkPlayer, RegisteredItemStack itemStack, RegisteredEntity targetEntity,
+                boolean cancelled) {
             for (ModContainer modContainer : modContainers.values()) {
                 cancelled = modContainer.notifyPlayerAttackEntity(
                         networkPlayer, itemStack, targetEntity, cancelled);

@@ -4,6 +4,7 @@ import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.lua.LuaObjectHolder;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.RegisteredEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.nbt.NBTTagCompound;
@@ -33,8 +34,11 @@ public class MixinEntityPlayer implements LuaObjectHolder {
     public void onAttackTargetEntityWithCurrentItem(Entity var1, CallbackInfo ci) {
         if (!(this instanceof NetworkPlayer)) return;
         NetworkPlayer networkPlayer = (NetworkPlayer) this;
+        // Hotfix: Can attack with some items when pvp is off.
+        boolean cancelled = var1 instanceof NetworkPlayer &&
+                !MinecraftServer.getInstance().pvpOn;
         if (ModLoader.Internal.notifyPlayerAttackEntity(networkPlayer,
-                networkPlayer.getRegisteredHeldItem(), (RegisteredEntity) var1)) {
+                networkPlayer.getRegisteredHeldItem(), (RegisteredEntity) var1, cancelled)) {
             ci.cancel();
         }
     }

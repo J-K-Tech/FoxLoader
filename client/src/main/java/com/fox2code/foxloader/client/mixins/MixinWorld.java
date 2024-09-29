@@ -16,11 +16,18 @@ import net.minecraft.src.game.level.World;
 import net.minecraft.src.game.level.WorldInfo;
 import net.minecraft.src.game.level.WorldProvider;
 import net.minecraft.src.game.level.WorldProviderSurface;
+import net.minecraft.src.game.level.chunk.ChunkProvider;
+import net.minecraft.src.game.level.chunk.IChunkLoader;
+import net.minecraft.src.game.level.chunk.IChunkProvider;
+import net.minecraft.src.game.level.chunk.ISaveHandler;
 import net.minecraft.src.game.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,12 +46,11 @@ public abstract class MixinWorld implements RegisteredWorld {
     @Shadow public abstract boolean setBlockAndMetadataWithNotify(int xCoord, int yCoord, int zCoord, int block, int metadata);
     @Shadow public abstract boolean entityJoinedWorld(Entity entity);
 
-    @Shadow @Final public WorldProvider worldProvider;
-    @Redirect(method = "init()V",at = @At(value = "FIELD",target = "Lnet/minecraft/src/game/level/World;worldProvider:Lnet/minecraft/src/game/level/WorldProvider", opcode = Opcodes.PUTFIELD,ordinal =2))
-    public void worldtype(World self, WorldProvider worldProvider) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    @ModifyConstant(method = "init()V",constant = @Constant(classValue = WorldProvider.class,ordinal = 2))
+    public WorldProvider worldtype(WorldProvider worldProvider) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         if (worldProvider instanceof WorldProviderCustom &&!multiplayerWorld){
             NBTTagCompound pnbt = this.worldInfo.getPlayerNBTTagCompound();
-            WorldProviderCustom wp= WorldProviderCustom.getProviderForDimensioncustom(
+            WorldProvider wp= WorldProviderCustom.getProviderForDimensioncustom(
                     pnbt.getString("customDimension")
                     );
             if (wp==null) {
@@ -59,12 +65,13 @@ public abstract class MixinWorld implements RegisteredWorld {
                 w.lowestY = lc << 4;
                 Minecraft.theMinecraft.changeWorld(w, "dimension "+pnbt.getString("customDimension")+" not found", Minecraft.theMinecraft.thePlayer);
 
-                this.worldProvider=new WorldProviderSurface();
+                wp= WorldProvider.getProviderForDimension(0);
             }
-        else this.worldProvider=wp;
-        }
-    }
+            return wp;
 
+        }
+        return WorldProvider.getProviderForDimension(0);
+    }
     @Override
     public boolean hasRegisteredControl() {
         return !this.multiplayerWorld;
@@ -120,9 +127,10 @@ public abstract class MixinWorld implements RegisteredWorld {
     public List<? extends NetworkPlayer> getRegisteredNetworkPlayers() {
         return (List<? extends NetworkPlayer>) (Object) this.playerEntities;
     }
-
+    @Shadow @Final WorldProvider worldProvider;
     @Override
     public int getRegisteredDimensionID() {
         return this.worldProvider.worldType;
     }
+
 }

@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.client;
 
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.level.WorldBiomeManagerHell;
 import net.minecraft.src.game.level.WorldProvider;
 import net.minecraft.src.game.level.chunk.ChunkProviderFlatworld;
 import net.minecraft.src.game.level.chunk.IChunkProvider;
@@ -11,12 +12,16 @@ import java.util.Map;
 
 public class WorldProviderCustom extends WorldProvider {
     public  static Map<String,WorldProviderCustom> customWorldProviders=new HashMap<>();
+    public String wpName;
     public static WorldProviderCustom getProviderForDimensioncustom(String arg0) {
         return customWorldProviders.get(arg0);
     }
 
 
+
     public static void addprovider(String name, WorldProviderCustom provider){
+        provider.wpName=name;
+        provider.worldType=3;
         customWorldProviders.put(name, provider);
     }
     @Override

@@ -13,6 +13,7 @@ import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
 import net.minecraft.src.game.level.WorldProvider;
+import net.minecraft.src.game.level.chunk.ISaveHandler;
 import org.lwjgl.input.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

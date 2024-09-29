@@ -123,10 +123,10 @@ public class MixinMinecraft {
 
     @Inject(method = "usePortal",at=@At("HEAD"),cancellable = true)
     public void usePortal(CallbackInfo ci) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        if (thePlayer.getClass().getField("incustomportal").getBoolean(thePlayer)&&thePlayer.dimension==0){
-            int dim=thePlayer.getClass().getField("goingtodim").getInt(thePlayer);
-            thePlayer.dimension=dim;
-            thePlayer
+        if (thePlayer.getClass().getField("incustomportal").getBoolean(thePlayer)){
+            if(thePlayer.dimension==0){
+            String dim=(String) thePlayer.getClass().getField("goingtodim").get(thePlayer);
+            thePlayer.dimension=3;
 
             WorldProvider wp=(WorldProvider)WorldProvider.class.getMethod("getProviderForDimensioncustom").invoke(null,dim);
 
@@ -146,5 +146,21 @@ public class MixinMinecraft {
 
 
         }
+        else {
+            this.thePlayer.setLocationAndAngles(this.thePlayer.posX, this.thePlayer.posY, this.thePlayer.posZ, this.thePlayer.rotationYaw, this.thePlayer.rotationPitch);
+            if (this.thePlayer.isEntityAlive()) {
+                this.theWorld.updateEntityWithOptionalForce(this.thePlayer, false);
+            }
+
+            short hc = this.theWorld.worldInfo.getHighestChunkOW();
+            short lc = this.theWorld.worldInfo.getLowestChunkOW();
+            World world = new World(this.theWorld, WorldProvider.getProviderForDimension(0));
+            world.highestChunk = hc;
+            world.highestY = hc << 4;
+            world.lowestChunk = lc;
+            world.lowestY = lc << 4;
+            this.changeWorld(world, StringTranslate.getInstance().translateKey("gui.world.leaveNether"), this.thePlayer);
+        }
+    }
     }
 }

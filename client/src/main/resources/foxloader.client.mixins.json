@@ -6,6 +6,7 @@
   "mixins": [
     "MixinBlock",
     "MixinBlockFire",
+    "MixinBlockPortal",
     "MixinChunk",
     "MixinChunkBlockMap",
     "MixinCommandHelperGUI",
@@ -51,6 +52,7 @@
     "MixinTextureMap",
     "MixinTexturePackCustom",
     "MixinTileEntity",
-    "MixinWorld"
+    "MixinWorld",
+    "MixinWorldProvider"
   ]
 }

@@ -27,7 +27,6 @@ public class MixinWorldProvider {
     @Inject(method = "getChunkProvider",at=@At("HEAD"),cancellable = true)
     public void getChunkProvider(CallbackInfoReturnable ci) {
         if(!worldObj.multiplayerWorld) {
-
             if (this.worldObj.getWorldInfo().getGenType()!=0&&this.worldObj.getWorldInfo().getGenType()!=-1) {
                 ci.setReturnValue(new ChunkProviderFlatworld(this.worldObj, this.worldObj.getRandomSeed(), this.worldObj.getWorldInfo().isMapFeaturesEnabled()));
                 ci.cancel();

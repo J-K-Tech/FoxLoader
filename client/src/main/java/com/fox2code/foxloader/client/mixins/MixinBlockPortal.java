@@ -25,10 +25,12 @@ public class MixinBlockPortal extends Block {
         WorldProviderHelper.addWorldProvider(name,worldProvider);
         return this;
     }
-    @Inject(method = "onEntityCollidedWithBlock",at=@At("HEAD"))
-    public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity, CallbackInfo ci) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        if (entity.ridingEntity == null && entity.riddenByEntity == null) {
+    @Inject(method = "onEntityCollidedWithBlock",at=@At("HEAD"),cancellable = true)
+    public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity, CallbackInfo ci) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        if (entity.ridingEntity == null && entity.riddenByEntity == null&&wp!=null) {
             entity.getClass().getMethod("setInPortalcustom").invoke(entity);
+            entity.getClass().getField("goingtodim").set(entity,wp);
+            ci.cancel();
         }
     }
 

@@ -12,6 +12,7 @@ import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +26,15 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
 
     @Shadow public Minecraft mc;
     public String customDimension=null;
+    @Inject(method = "writeEntityToNBT",at = @At("TAIL"))
+    public void writeEntityToNBT(NBTTagCompound var1,CallbackInfo ci) {
+        var1.setString("customDimension", this.customDimension);
+    }
 
+    @Inject(method = "writeEntityToNBT",at = @At("TAIL"))
+    public void readEntityFromNBT(NBTTagCompound var1, CallbackInfo ci) {
+        this.customDimension = var1.getString("customDimension");
+    }
     public MixinEntityPlayerSP(World var1) {
         super(var1);
     }
@@ -99,7 +108,6 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
         this.inPortal = false;
     }
     public String goingtodim=null;
-    public String indim=null;
     @Shadow
     public World worldObj;
     @Shadow
@@ -121,7 +129,6 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
             this.goingtodim=name;
         }
     }
-
     @Inject(method = "onLivingUpdate",at=@At("HEAD"))
     public void onLivingUpdate(CallbackInfo ci) {
         if (this.incustomportal){
@@ -144,10 +151,9 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
                     this.timeUntilPortalcustom = 10;
                     this.mc.sndManager.playSoundFX("portal.travel", 1.0F, this.rand.nextFloat() * 0.4F + 0.8F);
                     this.mc.usePortal();
-                    this.indim=goingtodim;
+                    this.customDimension=goingtodim;
                     this.goingtodim=null;
                     this.incustomportal = false;
-//                this.triggerAchievement(AchievementList.portal);
                 }
             }
 

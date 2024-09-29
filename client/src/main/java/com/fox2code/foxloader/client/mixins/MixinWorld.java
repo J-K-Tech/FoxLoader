@@ -3,17 +3,26 @@ package com.fox2code.foxloader.client.mixins;
 import com.fox2code.foxloader.loader.ClientMod;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.*;
+import jdk.internal.org.objectweb.asm.Opcodes;
+import net.minecraft.client.Minecraft;
+import net.minecraft.src.client.gui.StringTranslate;
+import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.block.tileentity.TileEntity;
 import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.other.EntityItem;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.level.WorldInfo;
 import net.minecraft.src.game.level.WorldProvider;
-import net.minecraft.src.game.level.chunk.ChunkProvider;
+import net.minecraft.src.game.level.WorldProviderSurface;
+import net.minecraft.src.game.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @Mixin(World.class)
@@ -22,6 +31,7 @@ public abstract class MixinWorld implements RegisteredWorld {
     @Shadow public List<TileEntity> loadedTileEntityList;
     @Shadow public List<Entity> loadedEntityList;
     @Shadow public boolean multiplayerWorld;
+    @Shadow public WorldInfo worldInfo;
 
     @Shadow public abstract int getBlockId(int x, int y, int z);
     @Shadow public abstract int getBlockMetadata(int xCoord, int yCoord, int zCoord);
@@ -29,6 +39,30 @@ public abstract class MixinWorld implements RegisteredWorld {
     @Shadow public abstract boolean entityJoinedWorld(Entity entity);
 
     @Shadow @Final public WorldProvider worldProvider;
+    @Redirect(method = "init()V",at = @At(value = "FIELD",target = "Lnet/minecraft/src/game/level/World;worldProvider:Lnet/minecraft/src/game/level/WorldProvider", opcode = Opcodes.PUTFIELD,ordinal =2))
+    public void worldtype(World self, WorldProvider worldProvider) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        if (self.worldInfo.getDimension()==3&&!multiplayerWorld){
+            NBTTagCompound pnbt = this.worldInfo.getPlayerNBTTagCompound();
+            WorldProvider wp=(WorldProvider) worldProvider.getClass().getMethod("getProviderForDimensioncustom").invoke(null,
+                    pnbt.getString("customDimension")
+                    );
+            if (wp==null) {
+                World w= new World(Minecraft.theMinecraft.theWorld, WorldProvider.getProviderForDimension(0));
+
+
+                short hc = Minecraft.theMinecraft.theWorld.worldInfo.getHighestChunkOW();
+                short lc = Minecraft.theMinecraft.theWorld.worldInfo.getLowestChunkOW();
+                w.highestChunk = hc;
+                w.highestY = hc << 4;
+                w.lowestChunk = lc;
+                w.lowestY = lc << 4;
+                Minecraft.theMinecraft.changeWorld(w, "dimension "+pnbt.getString("customDimension")+" not found", Minecraft.theMinecraft.thePlayer);
+
+                this.worldProvider=new WorldProviderSurface();
+            }
+        else this.worldProvider=wp;
+        }
+    }
 
     @Override
     public boolean hasRegisteredControl() {

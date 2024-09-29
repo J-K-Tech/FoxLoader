@@ -1,5 +1,7 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.client.WorldProviderCustom;
+import com.fox2code.foxloader.client.helpers.EntityPlayerSPHelper;
 import com.fox2code.foxloader.client.helpers.WorldProviderHelper;
 import net.minecraft.src.game.block.Block;
 import net.minecraft.src.game.block.BlockPortal;
@@ -20,7 +22,7 @@ public class MixinBlockPortal extends Block {
     public int dimension=-1;
     public String wp=null;
 
-    public BlockPortal withProvider(WorldProvider worldProvider,String name) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public BlockPortal withProvider(WorldProviderCustom worldProvider, String name) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         this.wp=name;
         WorldProviderHelper.addWorldProvider(name,worldProvider);
         return ((BlockPortal)(Object)this);
@@ -28,8 +30,7 @@ public class MixinBlockPortal extends Block {
     @Inject(method = "onEntityCollidedWithBlock",at=@At("HEAD"),cancellable = true)
     public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity, CallbackInfo ci) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         if (entity.ridingEntity == null && entity.riddenByEntity == null&&wp!=null) {
-            entity.getClass().getMethod("setInPortalcustom").invoke(entity);
-            entity.getClass().getField("goingtodim").set(entity,wp);
+            ((EntityPlayerSPHelper)entity).setInPortalcustom(wp);
             ci.cancel();
         }
     }

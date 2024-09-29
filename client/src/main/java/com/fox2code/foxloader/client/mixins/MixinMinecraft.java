@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.client.WorldProviderCustom;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ClientModLoader;
 import com.fox2code.foxloader.loader.ModLoader;
@@ -122,13 +123,13 @@ public class MixinMinecraft {
     public void changeWorld(World world, String arg2, EntityPlayer player) {}
 
     @Inject(method = "usePortal",at=@At("HEAD"),cancellable = true)
-    public void usePortal(CallbackInfo ci) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void usePortal(CallbackInfo ci) throws NoSuchFieldException, IllegalAccessException{
         if (thePlayer.getClass().getField("incustomportal").getBoolean(thePlayer)){
             if(thePlayer.dimension==0){
             String dim=(String) thePlayer.getClass().getField("goingtodim").get(thePlayer);
             thePlayer.dimension=3;
 
-            WorldProvider wp=(WorldProvider)WorldProvider.class.getMethod("getProviderForDimensioncustom").invoke(null,dim);
+            WorldProviderCustom wp=WorldProviderCustom.getProviderForDimensioncustom(dim);
 
             if (this.thePlayer.isEntityAlive()) {
                 this.theWorld.updateEntityWithOptionalForce(this.thePlayer, false);

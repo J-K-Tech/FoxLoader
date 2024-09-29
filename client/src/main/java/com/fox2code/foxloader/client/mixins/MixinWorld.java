@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.client.WorldProviderCustom;
 import com.fox2code.foxloader.loader.ClientMod;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.*;
@@ -41,9 +42,9 @@ public abstract class MixinWorld implements RegisteredWorld {
     @Shadow @Final public WorldProvider worldProvider;
     @Redirect(method = "init()V",at = @At(value = "FIELD",target = "Lnet/minecraft/src/game/level/World;worldProvider:Lnet/minecraft/src/game/level/WorldProvider", opcode = Opcodes.PUTFIELD,ordinal =2))
     public void worldtype(World self, WorldProvider worldProvider) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        if (self.worldInfo.getDimension()==3&&!multiplayerWorld){
+        if (worldProvider instanceof WorldProviderCustom &&!multiplayerWorld){
             NBTTagCompound pnbt = this.worldInfo.getPlayerNBTTagCompound();
-            WorldProvider wp=(WorldProvider) worldProvider.getClass().getMethod("getProviderForDimensioncustom").invoke(null,
+            WorldProviderCustom wp= WorldProviderCustom.getProviderForDimensioncustom(
                     pnbt.getString("customDimension")
                     );
             if (wp==null) {

@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.client.helpers.EntityPlayerSPHelper;
 import com.fox2code.foxloader.loader.ClientMod;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.network.NetworkConnection;
@@ -15,6 +16,7 @@ import net.minecraft.src.game.level.World;
 import net.minecraft.src.game.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,18 +24,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Random;
 
 @Mixin(EntityPlayerSP.class)
-public abstract class MixinEntityPlayerSP extends EntityPlayer implements NetworkPlayer {
+public abstract class MixinEntityPlayerSP extends EntityPlayer implements NetworkPlayer, EntityPlayerSPHelper {
 
     @Shadow public Minecraft mc;
     public String customDimension=null;
     @Inject(method = "writeEntityToNBT",at = @At("TAIL"))
     public void writeEntityToNBT(NBTTagCompound var1,CallbackInfo ci) {
-        var1.setString("customDimension", this.customDimension);
+        var1.setString("customDimension", this.customDimension==null?"notcustom":this.customDimension);
     }
 
     @Inject(method = "writeEntityToNBT",at = @At("TAIL"))
     public void readEntityFromNBT(NBTTagCompound var1, CallbackInfo ci) {
-        this.customDimension = var1.getString("customDimension");
+        this.customDimension = var1.getString("customDimension")=="notcustom"?null:var1.getString("customDimension");
     }
     public MixinEntityPlayerSP(World var1) {
         super(var1);
@@ -112,7 +114,7 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
     public boolean incustomportal=false;
 
     public int timeUntilPortalcustom=0;
-
+    @Override
     public void setInPortalcustom(String name) {
         if (this.timeUntilPortalcustom > 0) {
             this.timeUntilPortalcustom = 10;

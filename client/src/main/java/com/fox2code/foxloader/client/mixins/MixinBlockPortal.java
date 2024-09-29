@@ -20,10 +20,10 @@ public class MixinBlockPortal extends Block {
     public int dimension=-1;
     public String wp=null;
 
-    public Block withProvider(WorldProvider worldProvider,String name) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public BlockPortal withProvider(WorldProvider worldProvider,String name) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         this.wp=name;
         WorldProviderHelper.addWorldProvider(name,worldProvider);
-        return this;
+        return ((BlockPortal)(Object)this);
     }
     @Inject(method = "onEntityCollidedWithBlock",at=@At("HEAD"),cancellable = true)
     public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity, CallbackInfo ci) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {

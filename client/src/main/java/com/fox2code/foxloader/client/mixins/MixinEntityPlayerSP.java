@@ -108,14 +108,6 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
         this.inPortal = false;
     }
     public String goingtodim=null;
-    @Shadow
-    public World worldObj;
-    @Shadow
-    protected Random rand;
-    @Shadow
-    public Entity ridingEntity;
-    @Shadow
-    public abstract void mountEntity(Entity entity);
     public float timeInPortalcustom = 0.f;
     public boolean incustomportal=false;
 

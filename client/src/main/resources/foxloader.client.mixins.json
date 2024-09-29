@@ -39,7 +39,6 @@
     "MixinNetworkManager",
     "MixinPacket",
     "MixinPacket2Handshake",
-    "MixinPanelCrashReport",
     "MixinPlayerCommandHandler",
     "MixinPlayerController",
     "MixinPlayerControllerMix",

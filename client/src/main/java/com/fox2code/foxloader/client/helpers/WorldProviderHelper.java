@@ -5,7 +5,8 @@ import net.minecraft.src.game.level.WorldProvider;
 import java.lang.reflect.InvocationTargetException;
 
 public class WorldProviderHelper {
-    public static void setName(String name, WorldProvider wp) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        wp.getClass().getMethod("setName").invoke(wp,name);
+    public static void addWorldProvider(String name,WorldProvider worldProvider) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        worldProvider.getClass().getMethod("setName").invoke(worldProvider,name);
+        WorldProvider.class.getMethod("addprovider").invoke(null,name,worldProvider);
     }
 }

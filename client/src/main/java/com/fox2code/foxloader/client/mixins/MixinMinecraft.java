@@ -7,8 +7,11 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.GameSettings;
+import net.minecraft.src.client.gui.StringTranslate;
+import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.level.WorldProvider;
 import org.lwjgl.input.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -107,6 +111,40 @@ public class MixinMinecraft {
         if (this.closeGameDelayed) {
             this.closeGameDelayed = false;
             this.running = false;
+        }
+    }@Shadow
+    public World theWorld;
+    @Shadow
+    public EntityPlayerSP thePlayer;
+
+    @Shadow
+
+    public void changeWorld(World world, String arg2, EntityPlayer player) {}
+
+    @Inject(method = "usePortal",at=@At("HEAD"),cancellable = true)
+    public void usePortal(CallbackInfo ci) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        if (thePlayer.getClass().getField("incustomportal").getBoolean(thePlayer)&&thePlayer.dimension==0){
+            int dim=thePlayer.getClass().getField("goingtodim").getInt(thePlayer);
+            thePlayer.dimension=dim;
+            thePlayer
+
+            WorldProvider wp=(WorldProvider)WorldProvider.class.getMethod("getProviderForDimensioncustom").invoke(null,dim);
+
+            if (this.thePlayer.isEntityAlive()) {
+                this.theWorld.updateEntityWithOptionalForce(this.thePlayer, false);
+            }
+            short hc = this.theWorld.worldInfo.getHighestChunkOW();
+            short lc = this.theWorld.worldInfo.getLowestChunkOW();
+            World world = new World(this.theWorld, wp);
+            world.highestChunk = hc;
+            world.highestY = hc << 4;
+            world.lowestChunk = lc;
+            world.lowestY = lc << 4;
+
+            this.changeWorld(world, StringTranslate.getInstance().translateKey("gui.world.enterNether"), this.thePlayer);
+            ci.cancel();
+
+
         }
     }
 }

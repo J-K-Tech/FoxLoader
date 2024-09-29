@@ -142,12 +142,13 @@ public class MixinMinecraft {
             world.lowestChunk = lc;
             world.lowestY = lc << 4;
 
-            this.changeWorld(world, StringTranslate.getInstance().translateKey("gui.world.enterNether"), this.thePlayer);
+            this.changeWorld(world, "going to "+dim, this.thePlayer);
             ci.cancel();
 
 
         }
         else {
+                String dim=(String) thePlayer.getClass().getField("goingtodim").get(thePlayer);
             this.thePlayer.setLocationAndAngles(this.thePlayer.posX, this.thePlayer.posY, this.thePlayer.posZ, this.thePlayer.rotationYaw, this.thePlayer.rotationPitch);
             if (this.thePlayer.isEntityAlive()) {
                 this.theWorld.updateEntityWithOptionalForce(this.thePlayer, false);
@@ -160,7 +161,8 @@ public class MixinMinecraft {
             world.highestY = hc << 4;
             world.lowestChunk = lc;
             world.lowestY = lc << 4;
-            this.changeWorld(world, StringTranslate.getInstance().translateKey("gui.world.leaveNether"), this.thePlayer);
+            this.changeWorld(world, "leaving "+dim, this.thePlayer);
+            ci.cancel();
         }
     }
     }

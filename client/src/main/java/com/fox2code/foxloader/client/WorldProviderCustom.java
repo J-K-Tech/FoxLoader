@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WorldProviderCustom extends WorldProvider {
-    @Shadow
-    public World worldObj;
     public  static Map<String,WorldProviderCustom> customWorldProviders=new HashMap<>();
     public static WorldProviderCustom getProviderForDimensioncustom(String arg0) {
         return customWorldProviders.get(arg0);

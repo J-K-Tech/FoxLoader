@@ -54,6 +54,7 @@ public abstract class MixinWorld implements RegisteredWorld {
                     pnbt.getString("customDimension")
                     );
             if (wp==null) {
+
                 World w= new World(Minecraft.theMinecraft.theWorld, WorldProvider.getProviderForDimension(0));
 
 

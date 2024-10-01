@@ -4,6 +4,7 @@
   "package": "com.fox2code.foxloader.client.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AcessorSaveHandlers",
     "MixinBlock",
     "MixinBlockFire",
     "MixinBlockPortal",
@@ -47,11 +48,12 @@
     "MixinPlayerControllerTest",
     "MixinRenderEngine",
     "MixinRenderItem",
+    "MixinSaveOldDir",
+    "MixinSaveHandler",
     "MixinStringTranslate",
     "MixinTextureMap",
     "MixinTexturePackCustom",
     "MixinTileEntity",
-    "MixinWorld",
-    "MixinWorldProvider"
+    "MixinWorld"
   ]
 }

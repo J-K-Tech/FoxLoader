@@ -11,6 +11,7 @@ import net.minecraft.src.client.GameSettings;
 import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.entity.player.EntityPlayer;
+import net.minecraft.src.game.level.NetherPortalHandler;
 import net.minecraft.src.game.level.World;
 import net.minecraft.src.game.level.WorldProvider;
 import net.minecraft.src.game.level.chunk.ISaveHandler;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Mixin(Minecraft.class)
-public class MixinMinecraft {
+public abstract class MixinMinecraft {
     @Shadow public volatile boolean running;
     @Shadow public GameSettings gameSettings;
     @Shadow private static File minecraftDir;
@@ -121,10 +122,11 @@ public class MixinMinecraft {
 
     @Shadow
 
-    public void changeWorld(World world, String arg2, EntityPlayer player) {}
+    public abstract void changeWorld(World world, String arg2, EntityPlayer player) ;
 
     @Inject(method = "usePortal",at=@At("HEAD"),cancellable = true)
     public void usePortal(CallbackInfo ci) throws NoSuchFieldException, IllegalAccessException{
+
         if (thePlayer.getClass().getField("incustomportal").getBoolean(thePlayer)){
             if(thePlayer.dimension==0){
             String dim=(String) thePlayer.getClass().getField("goingtodim").get(thePlayer);
@@ -144,7 +146,6 @@ public class MixinMinecraft {
             world.lowestY = lc << 4;
 
             this.changeWorld(world, "going to "+dim, this.thePlayer);
-            ci.cancel();
 
 
         }
@@ -163,8 +164,20 @@ public class MixinMinecraft {
             world.lowestChunk = lc;
             world.lowestY = lc << 4;
             this.changeWorld(world, "leaving "+dim, this.thePlayer);
+        }
+
+        this.thePlayer.worldObj = this.theWorld;
+            if (this.thePlayer.isEntityAlive()) {
+                this.thePlayer
+                        .setLocationAndAngles(
+                                thePlayer.posX, this.thePlayer.posY, thePlayer.posZ, this.thePlayer.rotationYaw, this.thePlayer.rotationPitch
+                        );
+                this.theWorld.updateEntityWithOptionalForce(this.thePlayer, false);
+                new NetherPortalHandler().teleportEntity(this.theWorld, this.thePlayer);
+            }
+            ci.cancel();
+    }else{
             ci.cancel();
         }
-    }
     }
 }

@@ -3,10 +3,7 @@ package com.fox2code.foxloader.client.mixins;
 import com.fox2code.foxloader.client.WorldProviderCustom;
 import net.minecraft.src.game.level.WorldProvider;
 import net.minecraft.src.game.level.WorldProviderHell;
-import net.minecraft.src.game.level.chunk.ChunkLoader;
-import net.minecraft.src.game.level.chunk.IChunkLoader;
-import net.minecraft.src.game.level.chunk.ISaveHandler;
-import net.minecraft.src.game.level.chunk.SaveHandler;
+import net.minecraft.src.game.level.chunk.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -23,12 +20,10 @@ public abstract class MixinSaveHandler {
 
     @Inject(method = "getChunkLoader",at = @At("HEAD"),cancellable = true)
     public void getChunkLoader(WorldProvider worldProvider, CallbackInfoReturnable ci){
-        System.out.println(worldProvider.worldType);
         if (worldProvider instanceof WorldProviderCustom){
-            File file = new File(this.saveDirectory, "dimensions/"+((WorldProviderCustom) worldProvider).wpName);
+            File file = new File(this.saveDirectory, ((WorldProviderCustom) worldProvider).wpName);
             file.mkdirs();
-            System.out.println("saving "+file.toString());
-            ci.setReturnValue(new ChunkLoader(file, true));
+            ci.setReturnValue(new RNThreegionChunkLoader(file));
             ci.cancel();
         }
     }

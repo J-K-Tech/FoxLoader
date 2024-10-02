@@ -2,11 +2,18 @@ package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredEntityLiving;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.game.effect.Effect;
 import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.EntityLiving;
+import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityLiving.class)
 public abstract class MixinEntityLiving implements RegisteredEntityLiving {

@@ -50,4 +50,5 @@ public class MixinEntityPlayer implements LuaObjectHolder {
     public void foxLoader$setLuaObject(WeakReference<LuaValue> foxLoader$LuaObject) {
         this.foxLoader$LuaObject = foxLoader$LuaObject;
     }
+
 }

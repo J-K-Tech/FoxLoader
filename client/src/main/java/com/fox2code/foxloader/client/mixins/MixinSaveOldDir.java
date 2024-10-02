@@ -20,13 +20,12 @@ public abstract class MixinSaveOldDir  {
 
 @Inject(method = "getChunkLoader",at = @At("HEAD"),cancellable = true)
 public void getChunkLoader(WorldProvider worldProvider, CallbackInfoReturnable ci) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        System.out.println(worldProvider.worldType);
         if (worldProvider instanceof WorldProviderCustom){
-            File save = ((AcessorSaveHandlers)this).getSaveDirectory();
-            File file = new File(save, "dimensions/"+((WorldProviderCustom) worldProvider).wpName);
+            File save = (File) ((SaveOldDir)(Object)this).getClass().getMethod("getSaveDirectory").invoke(this);
+            File file = new File(save, "DIM-"+((WorldProviderCustom) worldProvider).wpName);
             file.mkdirs();
-            System.out.println("saving "+file.toString());
-            ci.setReturnValue(new ChunkLoader(file, true));
+
+            ci.setReturnValue(new RNThreegionChunkLoader(file));
             ci.cancel();
         }
     }

@@ -31,13 +31,9 @@ public class MixinBlockPortal extends Block {
     @Inject(method = "onEntityCollidedWithBlock",at=@At("HEAD"),cancellable = true)
     public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity, CallbackInfo ci) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         if (entity.ridingEntity == null && entity.riddenByEntity == null&&wp!=null&&entity instanceof EntityPlayerSP) {
-            if (world.worldProvider instanceof WorldProviderCustom){
-                ((EntityPlayerSPHelper)entity).setInPortalcustom("notcustom");
 
-            }
-            else {
                 ((EntityPlayerSPHelper)entity).setInPortalcustom(wp);
-            }
+
             ci.cancel();
         }
     }

@@ -326,11 +326,15 @@ public void startWorld(String arg1, String arg2, WorldSettings worldInfo) {
     if (this.saveLoader.isOldSaveType(arg1)) {
         this.convertMapFormat(arg1, arg2);
     } else {
+
+
         ISaveHandler saveHandler = this.saveLoader.getSaveLoader(arg1, false);
         World world = null;
-        if (saveHandler.loadWorldInfo()!=null)
-            this.Dim=saveHandler.loadWorldInfo().getPlayerNBTTagCompound().getString("customDimension");
-        this.DimR=saveHandler.loadWorldInfo().getPlayerNBTTagCompound().getString("customrespawnDimension");
+        if (saveHandler.loadWorldInfo()!=null) {
+            this.Dim = saveHandler.loadWorldInfo().getPlayerNBTTagCompound().getString("customDimension");
+            this.DimR = saveHandler.loadWorldInfo().getPlayerNBTTagCompound().getString("customrespawnDimension");
+        }
+
         world = new World(saveHandler, arg2, worldInfo, WorldProviderCustom.getProviderForDimensioncustom(this.Dim,3));
 
         if (world.isNewWorld) {

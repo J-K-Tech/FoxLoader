@@ -14,6 +14,7 @@ import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.client.player.MovementInputFromOptions;
 import net.minecraft.src.client.player.PlayerController;
+import net.minecraft.src.game.block.Block;
 import net.minecraft.src.game.entity.EntityLiving;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.NetherPortalHandler;
@@ -186,6 +187,10 @@ public EntityLiving renderViewEntity;
             if (this.thePlayer != null && !arg1) {
                 chunkCoordinates = this.thePlayer.getPlayerSpawnCoordinate();
                 if (chunkCoordinates != null) {
+                    System.err.println(chunkCoordinates.x+" "+chunkCoordinates.y+" "+chunkCoordinates.z);
+                    System.err.println(
+                            "block ID: "+
+                            this.theWorld.getBlockId(chunkCoordinates.x,chunkCoordinates.y,chunkCoordinates.z)+" bed ID: "+ Block.bed.blockID);
                     var4 = EntityPlayer.func_25060_a(this.theWorld, chunkCoordinates);
                     if (var4 == null) {
                         this.thePlayer.addChatMessage("tile.bed.notValid");
